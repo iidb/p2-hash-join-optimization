@@ -32,7 +32,7 @@ unzip data.zip
 ```bash
 mkdir build && cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release
-make -j$(nproc) p2-leaderboard
+make -j p2-leaderboard
 ```
 
 > Use `Release` mode for benchmarking. `Debug` mode enables sanitizers and is useful for correctness testing only.
@@ -58,7 +58,7 @@ You can also run individual test cases:
 ./bin/p2-leaderboard <path-to-data> 10a 11a
 ```
 
-**Step 4.** Run correctness tests:
+**Step 4.** Run correctness tests (inside the `build/` directory):
 
 ```bash
 make check-tests
