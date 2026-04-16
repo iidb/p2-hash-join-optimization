@@ -107,46 +107,6 @@ Each partition is joined independently, keeping the working set small.
 If you determine that approaches other than RPT provide better results for this specific in-memory scenario, you may focus on those optimizations instead.
 What's most important is achieving better performance and being able to explain your approach.
 
-## Project Structure
-
-```
-.
-├── CMakeLists.txt
-├── README.md
-├── src/
-│   ├── babydb.cpp                        # BabyDB instance + OptimizeJoinPlan()
-│   ├── include/
-│   │   ├── babydb.hpp
-│   │   ├── common/                       # Types, config, macros
-│   │   ├── concurrency/                  # Transaction support
-│   │   ├── execution/
-│   │   │   ├── operator.hpp              # Base Operator class (Volcano model)
-│   │   │   ├── hash_join_operator.hpp    # ★ Primary optimization target
-│   │   │   ├── seq_scan_operator.hpp
-│   │   │   └── ...                       # Other operators
-│   │   └── storage/                      # Catalog, Table, Index
-│   ├── execution/
-│   │   ├── hash_join_operator.cpp        # ★ Primary optimization target
-│   │   └── ...
-│   ├── concurrency/
-│   └── storage/
-├── benchmark/
-│   └── run_job.cpp                       # Benchmark harness (do NOT modify)
-├── test/                                 # Correctness tests
-└── third_party/                          # GoogleTest
-```
-
-### Key Files
-
-| File | Description |
-|------|-------------|
-| `src/execution/hash_join_operator.cpp` | Baseline hash join — start here |
-| `src/include/execution/hash_join_operator.hpp` | Hash join operator header |
-| `src/babydb.cpp` → `OptimizeJoinPlan()` | Hook for global join plan optimization (currently empty) |
-| `src/include/common/config.hpp` | `CHUNK_SUGGEST_SIZE` and other config |
-| `src/include/execution/operator.hpp` | Base `Operator` class with `Next()` / `Init()` / `Check()` |
-| `src/include/common/typedefs.hpp` | Core types: `data_t` (int64), `Tuple`, `Schema`, `Chunk` |
-
 ## Grading
 
 | Component | Points |
