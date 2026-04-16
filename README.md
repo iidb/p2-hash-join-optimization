@@ -23,8 +23,7 @@ The harness measures end-to-end execution time (plan construction + execution) a
 **Step 1.** Download and extract the test dataset:
 
 ```bash
-# Download data.zip from the release page
-wget https://github.com/iidb/p2-hash-join-optimization/releases/download/v1.0/data.zip
+wget https://cloud.tsinghua.edu.cn/seafhttp/files/b3d9f1fe-1c02-4411-9d73-bd771125512a/data.zip
 unzip data.zip
 ```
 
