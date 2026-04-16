@@ -20,7 +20,15 @@ The harness measures end-to-end execution time (plan construction + execution) a
 
 ## Getting Started
 
-**Step 1.** Download the test dataset from the [release page](https://github.com/iidb/p2-hash-join-optimization/releases) and place it under a directory (e.g., `data/`).
+**Step 1.** Download and extract the test dataset:
+
+```bash
+# Download data.zip from the release page
+wget https://github.com/iidb/p2-hash-join-optimization/releases/download/v1.0/data.zip
+unzip data.zip
+```
+
+This creates a `reduced_data/` directory containing `10a.data` through `19a.data`.
 
 **Step 2.** Build the project:
 
@@ -35,7 +43,7 @@ make -j$(nproc) p2-leaderboard
 **Step 3.** Run the benchmark:
 
 ```bash
-./bin/p2-leaderboard <path-to-data>
+./bin/p2-leaderboard reduced_data
 ```
 
 Example output:
@@ -50,7 +58,7 @@ Total time: 1205ms
 You can also run individual test cases:
 
 ```bash
-./bin/p2-leaderboard <path-to-data> 10a 11a
+./bin/p2-leaderboard reduced_data 10a 11a
 ```
 
 **Step 4.** Run correctness tests:
