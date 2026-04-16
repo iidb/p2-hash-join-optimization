@@ -26,12 +26,7 @@ The harness measures end-to-end execution time (plan construction + execution) a
 
 ## Getting Started
 
-**Step 1.** Download and extract the test dataset:
-
-```bash
-wget https://cloud.tsinghua.edu.cn/seafhttp/files/b3d9f1fe-1c02-4411-9d73-bd771125512a/data.zip
-unzip data.zip
-```
+**Step 1.** Download and extract the test dataset from [here](https://cloud.tsinghua.edu.cn/f/1c60980a9c87433794e6/?dl=1).
 
 **Step 2.** Build the project:
 
