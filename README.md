@@ -8,9 +8,15 @@ The goal is to speed up multi-table join queries without changing the join order
 BabyDB executes joins using the classic **Volcano iterator model**: each operator pulls data one chunk at a time from its children.
 The baseline hash join implementation uses `std::unordered_multimap` and performs significant per-tuple copying.
 
-Your task is to optimize the hash join pipeline so that the provided benchmark queries run faster.
+Your primary task is to optimize hash join execution for a given join order to achieve better performance.
+We strongly recommend implementing the **Robust Predicate Transfer (RPT)** algorithm as described in the recent [paper](https://www.vldb.org/pvldb/vol17/p3282-zhao.pdf) (Reference 1).
+However, since we are working with an in-memory database, the additional overhead of creating Bloom filters (as used in RPT) might not always lead to substantial performance improvements.
+A **20% improvement** would be considered a good achievement.
+Therefore, you are encouraged to explore additional or alternative optimization techniques.
+
 You may modify any source file in the `src/` directory, but the benchmark harness (`benchmark/run_job.cpp`) and test cases must remain unchanged.
 Your implementation must produce **correct results** — any mismatch in output count invalidates the run.
+The testing framework and data loading interfaces are provided in the `benchmark/run_job.cpp` file.
 
 ### Benchmark
 
@@ -68,7 +74,7 @@ make check-tests
 
 You may consider the following techniques (not exhaustive):
 
-### 1. Join Implementation Optimization
+### 1. Join Implementation Optimization (Reference 2)
 
 The baseline hash join has several performance bottlenecks:
 
@@ -78,7 +84,7 @@ The baseline hash join has several performance bottlenecks:
 
 Consider replacing the hash table with a more cache-friendly structure, reducing copies with columnar or pointer-based approaches, and pre-allocating memory.
 
-### 2. Bloom Filter / Semi-Join Reduction
+### 2. Bloom Filter / Semi-Join Reduction (Reference 3)
 
 When joining a large probe side against a small build side, many probe tuples may find no match.
 A **Bloom filter** built from the build-side keys can cheaply reject non-matching probe tuples before they reach the hash table.
@@ -86,7 +92,7 @@ A **Bloom filter** built from the build-side keys can cheaply reject non-matchin
 In multi-way join trees, this idea generalizes to **Robust Predicate Transfer (RPT)**: push Bloom filters across multiple joins to filter early.
 Note that in an in-memory setting, the overhead of building and probing Bloom filters may offset the savings — a 20% improvement from this approach alone would be a good result.
 
-### 3. Hash Partitioning
+### 3. Hash Partitioning (Reference 4)
 
 Partitioning both build and probe sides by hash value before joining can improve cache locality, especially when the hash table exceeds L2/L3 cache size.
 Each partition is joined independently, keeping the working set small.
@@ -97,6 +103,9 @@ Each partition is joined independently, keeping the working set small.
 - Software prefetching to hide memory latency
 - Chunk size tuning
 - Parallelism (thread-level or partition-level)
+
+If you determine that approaches other than RPT provide better results for this specific in-memory scenario, you may focus on those optimizations instead.
+What's most important is achieving better performance and being able to explain your approach.
 
 ## Project Structure
 
@@ -150,23 +159,39 @@ Each partition is joined independently, keeping the working set small.
 
 Each test case is worth 1 point. You earn the point if your implementation runs faster than the baseline threshold for that test case.
 
+### Implementation Requirements
+
+Your implementation should:
+
+1. Work correctly with the provided benchmark framework
+2. Improve join performance compared to the baseline implementation
+3. Be well-documented with comments explaining your optimization strategies
+
 ### Report Requirements
 
-Submit a report (PDF) that:
+You must submit a detailed report that:
 
-1. Explains your optimization approach in detail
-2. Provides performance measurements before and after each optimization
-3. Analyzes why each optimization was effective or ineffective
-4. Discusses trade-offs in your design
+1. Follows academic paper standards and structure
+2. Explains your optimization approach in detail
+3. Provides a performance breakdown analysis for each implemented technique
+4. Discusses why certain optimizations were effective or ineffective
+5. Includes performance measurements and comparisons with the baseline
+6. Analyzes any trade-offs in your approach
 
-The report should be detailed enough that another student could reproduce your approach.
+The report should be comprehensive enough that another student could implement your approach based solely on your explanation.
 
 ## Submission
 
 Submit a zip file containing:
 
-1. Your complete source code
-2. Your report in PDF format
+1. Your optimized implementation code
+2. A detailed report in PDF format explaining your optimizations
+3. Any additional scripts or tools you created for testing/evaluation
+
+## Tips
+
+1. Consider the trade-offs between different optimization strategies
+2. Remember that the goal is performance improvement with a clear understanding of why your optimizations work
 
 ## References
 
