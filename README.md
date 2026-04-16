@@ -27,8 +27,6 @@ wget https://cloud.tsinghua.edu.cn/seafhttp/files/b3d9f1fe-1c02-4411-9d73-bd7711
 unzip data.zip
 ```
 
-This creates a `reduced_data/` directory containing `10a.data` through `19a.data`.
-
 **Step 2.** Build the project:
 
 ```bash
@@ -42,7 +40,7 @@ make -j$(nproc) p2-leaderboard
 **Step 3.** Run the benchmark:
 
 ```bash
-./bin/p2-leaderboard reduced_data
+./bin/p2-leaderboard <path-to-data>
 ```
 
 Example output:
@@ -57,7 +55,7 @@ Total time: 1205ms
 You can also run individual test cases:
 
 ```bash
-./bin/p2-leaderboard reduced_data 10a 11a
+./bin/p2-leaderboard <path-to-data> 10a 11a
 ```
 
 **Step 4.** Run correctness tests:
