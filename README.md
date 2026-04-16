@@ -142,7 +142,7 @@ The report should be comprehensive enough that another student could implement y
 
 ## Submission
 
-Submit a zip file containing:
+Submit a zip file to **Web Learning** (网络学堂) containing:
 
 1. Your optimized implementation code
 2. A detailed report in PDF format explaining your optimizations
