@@ -95,15 +95,14 @@ static std::shared_ptr<Operator> BuildTree(std::ifstream &data_file, ExecutionCo
     }
 }
 
-static int64_t Run(std::string data_path, std::string test_name) {
-    std::ifstream data_file(data_path, std::ios::binary | std::ios::in);
-    BabyDB db_instance;
-    BuildTable(data_file, db_instance);
-    idx_t expect_size;
-    Read(data_file, expect_size);
-
+// One timed iteration over the same loaded BabyDB. Returns the wall time in
+// nanoseconds and writes whether output cardinality matched expect_size into
+// `correct`.
+static int64_t RunOnce(std::ifstream &data_file, BabyDB &db_instance,
+                       idx_t expect_size, bool &correct) {
     auto txn = db_instance.CreateTxn();
     auto exec_ctx = db_instance.GetExecutionContext(txn);
+    data_file.clear();                       // reset eofbit set by earlier reads
     data_file.seekg(0, std::ios::beg);
 
     auto start = std::chrono::high_resolution_clock::now();
@@ -121,10 +120,50 @@ static int64_t Run(std::string data_path, std::string test_name) {
     auto end = std::chrono::high_resolution_clock::now();
     db_instance.Commit(*txn);
 
-    auto cost = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
-    std::cout << test_name << ": " << (expect_size == total_size ? "correct" : "wrong") << " time: " << cost.count() / 1000000 << "ms\n";
+    correct = (total_size == expect_size);
+    return std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+}
 
-    return cost.count();
+// 1 warmup + N timed runs; reports the mean of the timed runs.
+static constexpr int kWarmupIters = 1;
+static constexpr int kTimedIters  = 3;
+
+static int64_t Run(std::string data_path, std::string test_name) {
+    std::ifstream data_file(data_path, std::ios::binary | std::ios::in);
+    BabyDB db_instance;
+    BuildTable(data_file, db_instance);
+    idx_t expect_size;
+    Read(data_file, expect_size);
+
+    bool all_correct = true;
+
+    // Warmup: faults pages in, populates allocator size classes, etc.
+    for (int i = 0; i < kWarmupIters; ++i) {
+        bool ok = false;
+        (void) RunOnce(data_file, db_instance, expect_size, ok);
+        if (!ok) all_correct = false;
+    }
+
+    // Timed iterations.
+    int64_t timings[kTimedIters];
+    int64_t total_ns = 0;
+    for (int i = 0; i < kTimedIters; ++i) {
+        bool ok = false;
+        timings[i] = RunOnce(data_file, db_instance, expect_size, ok);
+        if (!ok) all_correct = false;
+        total_ns += timings[i];
+    }
+    int64_t mean_ns = total_ns / kTimedIters;
+
+    std::cout << test_name << ": " << (all_correct ? "correct" : "wrong")
+              << " time: " << mean_ns / 1000000 << "ms"
+              << " (mean of " << kTimedIters << ", " << kWarmupIters << " warmup; runs:";
+    for (int i = 0; i < kTimedIters; ++i) {
+        std::cout << " " << timings[i] / 1000000 << "ms";
+    }
+    std::cout << ")\n";
+
+    return mean_ns;
 }
 
 static std::vector<std::string> all_tests = {
