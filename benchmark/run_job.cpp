@@ -105,7 +105,7 @@ static int64_t RunOnce(std::ifstream &data_file, BabyDB &db_instance,
     data_file.clear();                       // reset eofbit set by earlier reads
     data_file.seekg(0, std::ios::beg);
 
-    auto start = std::chrono::high_resolution_clock::now();
+    auto start = std::chrono::steady_clock::now();
     auto op_tree = BuildTree(data_file, exec_ctx);
     db_instance.OptimizeJoinPlan(op_tree);
     Chunk data_chunk;
@@ -117,7 +117,7 @@ static int64_t RunOnce(std::ifstream &data_file, BabyDB &db_instance,
         state = op_tree->Next(data_chunk);
         total_size += data_chunk.size();
     }
-    auto end = std::chrono::high_resolution_clock::now();
+    auto end = std::chrono::steady_clock::now();
     db_instance.Commit(*txn);
 
     correct = (total_size == expect_size);
